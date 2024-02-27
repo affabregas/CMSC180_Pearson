@@ -86,9 +86,9 @@ void main(){
 
             // display_table(xVec, NumberOfInputs, yVec);
 
-            clock_t before = clock();
+            time_t before = time();
             pearson_cor(xVec, yVec, NumberOfInputs, rVec);
-            clock_t after = clock();
+            time_t after = time();
 
             double runtime = 1000 * difftime(after,before)/CLOCKS_PER_SEC;
             printf("Total runtime: %lf ms\n", runtime);
