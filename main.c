@@ -75,11 +75,11 @@ void pearson_cor(double **x, double *y, int n, double*r) {  // T(n) = n(5 + (n +
 
 
 void main(){
-    int n_array[] = {100,200,300,400,500,600,700,800,900,1000,2000,4000,8000,16000,20000};
+    int n_array[] = {100,200,300,400,500,600,700,800,900,1000,1050,1100,2000,4000,8000,16000,20000};
     // int NumberOfInputs = 1000;
     int NumberOfInputs;
 
-    for(int rt = 0; rt < 15; rt++) {
+    for(int rt = 0; rt < 17; rt++) {
         double avg = 0;
         int iter = 0;
 
