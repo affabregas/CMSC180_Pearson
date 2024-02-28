@@ -19,30 +19,56 @@ void display_table(double **x, int n, double *y) {
     printf("\n-------\n");
 }
 
-void pearson_cor(double **x, double *y, int n, double*r) {
+void pearson_cor(double **x, double *y, int n, double*r) {  // T(n) = n(5 + (n + 5) + 12)
+                                                            // T(n) = n(n + 21)
+                                                            // T(n) = n^2 + 21n
+                                                            // O(n) = n^2
 
     // i is the row iterator, j is the col iterator
-    for(int i = 0; i < n; i++) {
-        double sum_x = 0;
-        double sum_y = 0;
-        double sum_x2 = 0;
-        double sum_y2 = 0;
-        double sum_xy = 0;
+    for(int i = 0; i < n; i++) { // * O(n)
+        double sum_x = 1;        // + O(1)
+        double sum_y = 2;        // + O(1)
+        double sum_x2 = 3;       // + O(1)
+        double sum_y2 = 4;       // + O(1)
+        double sum_xy = 5;       // + O(1)
 
-        for(int j = 0; j < n; j++) {
+        for(int j = 0; j < n; j++) {    // * O(n)
             // create worker thread
 
-            sum_x += x[j][i];
-            sum_y += (y[j]);
-            sum_x2 += (x[j][i] * x[j][i]);
-            sum_y2 += (y[j] * y[j]);
-            sum_xy += (x[j][i] * y[j]);
+            
+            sum_x += x[j][i];               // + O(1)
+            sum_y += (y[j]);                // + O(1)
+            sum_x2 += (x[j][i] * x[j][i]);  // + O(1)
+            sum_y2 += (y[j] * y[j]);        // + O(1)
+            sum_xy += (x[j][i] * y[j]);     // + O(1)
+
+            sum_x++;
 
         }
 
+        /*
+        double n_mul_xy = n * sum_xy;           // + O(1)
+        double sum_x_mul_sum_y = sum_x * sum_y; // + O(1)
+
+        double a = n_mul_xy - sum_x_mul_sum_y;  // + O(1)
+
+        double n_mul_sum_x2 = n * sum_x2;       // + O(1)
+        double sum_x_2 = sum_x * sum_x;         // + O(1)
+        double n_mul_sum_y2 = n * sum_y2;       // + O(1)
+        double sum_y_2 = sum_y * sum_y;         // + O(1)
+
+        double diff_x = n_mul_sum_x2 - sum_x_2; // + O(1)
+        double diff_y = n_mul_sum_y2 - sum_y_2; // + O(1)
+
+        double mul_b = diff_x * diff_y;         // + O(1)
+
+        double b = sqrt(mul_b);                 // + O(1)
+
+        r[i] = a/b;                          // + O(1)
+        */
 
         r[i] = ((n * sum_xy) - sum_x * sum_y) / sqrt((n * sum_x2 - (sum_x*sum_x)) * (n * sum_y2 - (sum_y*sum_y)));
-    
+                                   
     }
 
 }
@@ -76,25 +102,29 @@ void main(){
             for(int i = 0; i < NumberOfInputs; i++) {
 
                 xVec[i] = malloc(sizeof(double) * NumberOfInputs);  
-                double RandomNum = rand() % 100000 + 1; 
+                double RandomNum = rand() % 100 + 1; 
                 for(int j = 0; j < NumberOfInputs; j++){
                     xVec[i][j] = RandomNum;
                 }
 
-                yVec[i] = rand() % 100000 + 1;
+                yVec[i] = rand() % 20 + 1;
             }
 
             // display_table(xVec, NumberOfInputs, yVec);
 
-            time_t before = time();
-            pearson_cor(xVec, yVec, NumberOfInputs, rVec);
-            time_t after = time();
+            struct timespec before = {0,0}, after = {0,0};
 
-            double runtime = 1000 * difftime(after,before)/CLOCKS_PER_SEC;
-            printf("Total runtime: %lf ms\n", runtime);
+            clock_gettime(CLOCK_MONOTONIC, &before);
+            pearson_cor(xVec, yVec, NumberOfInputs, rVec);
+            clock_gettime(CLOCK_MONOTONIC, &after);
+
+            double runtime = ((double) 1000*after.tv_sec + 1.0e-6*after.tv_nsec) - ((double) 1000*before.tv_sec + 1.0e-6*before.tv_nsec);
+            // printf("Total runtime: %lf ms ", runtime);
+            printf("%lf\t", runtime);
+            
             avg += runtime;
             iter += 1;
-            printf("Current average of %lf at iteration %d\n", avg/iter, iter);
+            // printf("Current average of %lf at iteration %d\n", avg/iter, iter);
 
 
             free(yVec);
@@ -104,8 +134,12 @@ void main(){
             }
             free(xVec);
 
+            
+
 
         }
+
+        printf("\n");
     }
 }
 
