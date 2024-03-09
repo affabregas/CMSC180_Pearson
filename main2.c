@@ -15,7 +15,7 @@ To-dos
 2. thread args holder
 3. thread joining
 4. multiple run for multiple no. of threads in main, modification
-5. 
+5. check if computation of pearsons r is still correct
 
 
 */
