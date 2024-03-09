@@ -1,3 +1,3 @@
 r:
-	gcc main.c -lm
+	gcc main2.c -lm
 	./a.out
