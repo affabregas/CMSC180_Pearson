@@ -131,15 +131,18 @@ void pearson_cor(char **x, double *y, int n, double*r, int numberOfThreads, arg*
 
     for(int i=0; i < n; i++){
 		r[i] = ((n * argHolder->sum_xy[i]) - argHolder->sum_x[i] * argHolder->sum_y[i]) / sqrt((n * argHolder->sum_x2[i] - (argHolder->sum_x[i]*argHolder->sum_x[i])) * (n * argHolder->sum_y2[i] - (argHolder->sum_y[i]*argHolder->sum_y[i])));
-	}  
+        
+    }  
+
+    // printf("r: %lf\n",r[0]);
 
 
 }
 
 
 int main(){
-    int n_array[] = {64, 128, 512};
-    int threadArray[] = {1,2,4,8,16,32,64};
+    int n_array[] = {25000};
+    int threadArray[] = {1,2,4,8,16,32,64,128,256};
     int NumberOfInputs;
 
 
@@ -147,14 +150,14 @@ int main(){
 
     // Division by row
 
-    for(int rt = 0; rt < 3; rt++) {
+    for(int rt = 0; rt < 1; rt++) {
         double avg = 0;
         int iter = 0;
 
         NumberOfInputs = n_array[rt];
         printf("\n\nCurrently running on N = %d\n",NumberOfInputs);
 
-        for(int ti = 0; ti < 7; ti++) {
+        for(int ti = 0; ti < 9; ti++) {
             int NUMBER_OF_THREADS = threadArray[ti];
             printf("\n  -- With %d thread/s --\n", NUMBER_OF_THREADS);
 
