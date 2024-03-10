@@ -22,6 +22,12 @@ To-dos
 */
 
 // This will be passed as parameters
+
+
+// mutex as global variable
+pthread_mutex_t *summation_mutex;
+
+
 typedef struct arg{
 	char **x;
     double *y;
@@ -29,6 +35,13 @@ typedef struct arg{
     double *r;
     int start;
     int end;
+
+    double *sum_x;
+    double *sum_y;
+    double *sum_x2;
+    double *sum_y2;
+    double *sum_xy;
+
 }arg;
 
 
@@ -59,9 +72,11 @@ void * bounded_pearson_cor(void *args) {
     int start = a->start;
     int end = a->end;
 
+
     // printf("Thread created. Bounds: [%d, %d]\n", start, end);
 
-    for(int i = start; i < end; i++) { // * O(n)
+    for(int i = 0; i < n; i++) { // * O(n)
+    //  printf("\nIterating\n");
 
         double sum_x = 0;        // + O(1)
         double sum_y = 0;        // + O(1)
@@ -69,7 +84,7 @@ void * bounded_pearson_cor(void *args) {
         double sum_y2 = 0;       // + O(1)
         double sum_xy = 0;       // + O(1)
 
-        for(int j = 0; j < n; j++) {    // * O(n)
+        for(int j = start; j < end; j++) {    // * O(n)
             // create worker thread       
             sum_x += x[j][i];               // + O(1)
             sum_y += (y[j]);                // + O(1)
@@ -80,7 +95,20 @@ void * bounded_pearson_cor(void *args) {
             sum_x++;
         }
 
-        r[i] = ((n * sum_xy) - sum_x * sum_y) / sqrt((n * sum_x2 - (sum_x*sum_x)) * (n * sum_y2 - (sum_y*sum_y)));
+        // CRITICAL SECTION
+        //printf("Trying to access: %p\n", &summation_mutex[i]);
+        pthread_mutex_lock(&summation_mutex[i]);
+        //printf("\nLocked: %p\n", &summation_mutex[i]);
+
+        a->sum_x[i] += sum_x;
+        a->sum_y[i] += sum_y;
+        a->sum_x2[i] += sum_x2;
+        a->sum_y2[i] += sum_y2;
+        a->sum_xy[i] += sum_xy;
+
+        pthread_mutex_unlock(&summation_mutex[i]);
+        //printf("\nUnlocked: %p\n", &summation_mutex[i]);
+        // END OF CRITICAL SECTION
                  
                                    
     }
@@ -91,26 +119,26 @@ void * bounded_pearson_cor(void *args) {
 }
 
 void pearson_cor(char **x, double *y, int n, double*r, int numberOfThreads, arg* argHolder, pthread_t* tid) {
-      
 
     for(int i = 0; i < numberOfThreads; i++) {
-
-        // MAKE THREAD RUN HERE 
-        // bounded_pearson_cor(x, y, n, r, start, end);
         pthread_create(&tid[i], NULL, bounded_pearson_cor, (void *) &argHolder[i]);
     }
 
-    // Thread joining
+
 	for(int i=0; i < numberOfThreads; i++){
 		pthread_join(tid[i], NULL);
 	}
+
+    for(int i=0; i < n; i++){
+		r[i] = ((n * argHolder->sum_xy[i]) - argHolder->sum_x[i] * argHolder->sum_y[i]) / sqrt((n * argHolder->sum_x2[i] - (argHolder->sum_x[i]*argHolder->sum_x[i])) * (n * argHolder->sum_y2[i] - (argHolder->sum_y[i]*argHolder->sum_y[i])));
+	}  
 
 
 }
 
 
 int main(){
-    int n_array[] = {25000, 30000, 40000, 50000,100000};
+    int n_array[] = {64, 128, 512};
     int threadArray[] = {1,2,4,8,16,32,64};
     int NumberOfInputs;
 
@@ -119,7 +147,7 @@ int main(){
 
     // Division by row
 
-    for(int rt = 0; rt < 5; rt++) {
+    for(int rt = 0; rt < 3; rt++) {
         double avg = 0;
         int iter = 0;
 
@@ -142,6 +170,7 @@ int main(){
             double *yVec = (double*) malloc(sizeof(double) * NumberOfInputs);
             double *rVec = (double*) malloc(sizeof(double) * NumberOfInputs);
 
+
             // Initializing the input matrix
             for(int i = 0; i < NumberOfInputs; i++) {
 
@@ -160,6 +189,12 @@ int main(){
             arg* argHolder = (arg*) malloc(sizeof(arg) * NUMBER_OF_THREADS);
             pthread_t *tid = (pthread_t*) malloc(sizeof(pthread_t) * NUMBER_OF_THREADS);
 
+            double *sum_x =  (double*) calloc(NumberOfInputs, sizeof(double));
+            double *sum_y =  (double*) calloc(NumberOfInputs, sizeof(double));
+            double *sum_x2 = (double*) calloc(NumberOfInputs, sizeof(double));
+            double *sum_y2 = (double*) calloc(NumberOfInputs, sizeof(double));
+            double *sum_xy = (double*) calloc(NumberOfInputs, sizeof(double));
+
             for(int i = 0; i < NUMBER_OF_THREADS; i++) {
                 int start = offset*i;
                 int end = offset*(i+1)-1;
@@ -173,7 +208,22 @@ int main(){
                 argHolder[i].r = rVec;
                 argHolder[i].start = start;
                 argHolder[i].end = end;
+
+                argHolder[i].sum_x = sum_x;
+                argHolder[i].sum_y = sum_y;
+                argHolder[i].sum_x2 = sum_x2;
+                argHolder[i].sum_y2 = sum_y2;
+                argHolder[i].sum_xy = sum_xy;
             }
+
+            // mutex init
+
+            summation_mutex = malloc(sizeof(pthread_mutex_t) * NumberOfInputs);
+            for (int m = 0; m < NumberOfInputs; m++) {
+                pthread_mutex_init(&summation_mutex[m], NULL);
+            }
+
+        
 
 
             struct timespec before = {0,0}, after = {0,0};
@@ -187,7 +237,14 @@ int main(){
             
             avg += runtime;
             iter += 1;
-            // printf("Current average of %lf at iteration %d\n", avg/iter, iter);
+
+
+            // mutex destroy
+            for (int m = 0; m < NUMBER_OF_THREADS; m++) {
+                pthread_mutex_destroy(&summation_mutex[m]);
+            }
+
+            
 
             free(yVec);
             free(rVec);

@@ -1,3 +1,3 @@
 r:
-	gcc main2.c -lm
+	gcc main2_ver2.c -lm -pthread -g
 	./a.out
