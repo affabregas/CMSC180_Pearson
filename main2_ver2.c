@@ -130,11 +130,10 @@ void pearson_cor(char **x, double *y, int n, double*r, int numberOfThreads, arg*
 	}
 
     for(int i=0; i < n; i++){
+        // The formula for Pearson's r in code form
 		r[i] = ((n * argHolder->sum_xy[i]) - argHolder->sum_x[i] * argHolder->sum_y[i]) / sqrt((n * argHolder->sum_x2[i] - (argHolder->sum_x[i]*argHolder->sum_x[i])) * (n * argHolder->sum_y2[i] - (argHolder->sum_y[i]*argHolder->sum_y[i])));
         
     }  
-
-    // printf("r: %lf\n",r[0]);
 
 
 }

@@ -93,10 +93,8 @@ void * bounded_pearson_cor(void *args) {
 void pearson_cor(char **x, double *y, int n, double*r, int numberOfThreads, arg* argHolder, pthread_t* tid) {
       
 
+    // Thread creation
     for(int i = 0; i < numberOfThreads; i++) {
-
-        // MAKE THREAD RUN HERE 
-        // bounded_pearson_cor(x, y, n, r, start, end);
         pthread_create(&tid[i], NULL, bounded_pearson_cor, (void *) &argHolder[i]);
     }
 
@@ -116,8 +114,6 @@ int main(){
 
 
     printf("\n");
-
-    // Division by row
 
     for(int rt = 0; rt < 5; rt++) {
         double avg = 0;
