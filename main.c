@@ -80,7 +80,7 @@ void main(){
             double *yVec = (double*) malloc(sizeof(double) * NumberOfInputs);
             double *rVec = (double*) malloc(sizeof(double) * NumberOfInputs);
 
-/
+
             // Initializing the input matrix
             for(int i = 0; i < NumberOfInputs; i++) {
 
