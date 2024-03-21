@@ -36,40 +36,13 @@ void pearson_cor(double **x, double *y, int n, double*r) {  // T(n) = n(5 + (n +
         double sum_y2 = 0;       // + O(1)
         double sum_xy = 0;       // + O(1)
 
-        for(int j = 0; j < n; j++) {    // * O(n)
-            // create worker thread
-
-            
+        for(int j = 0; j < n; j++) {    // * O(n)        
             sum_x += x[j][i];               // + O(1)
             sum_y += (y[j]);                // + O(1)
             sum_x2 += (x[j][i] * x[j][i]);  // + O(1)
             sum_y2 += (y[j] * y[j]);        // + O(1)
             sum_xy += (x[j][i] * y[j]);     // + O(1)
-
-            sum_x++;
-
         }
-
-        /*
-        double n_mul_xy = n * sum_xy;           // + O(1)
-        double sum_x_mul_sum_y = sum_x * sum_y; // + O(1)
-
-        double a = n_mul_xy - sum_x_mul_sum_y;  // + O(1)
-
-        double n_mul_sum_x2 = n * sum_x2;       // + O(1)
-        double sum_x_2 = sum_x * sum_x;         // + O(1)
-        double n_mul_sum_y2 = n * sum_y2;       // + O(1)
-        double sum_y_2 = sum_y * sum_y;         // + O(1)
-
-        double diff_x = n_mul_sum_x2 - sum_x_2; // + O(1)
-        double diff_y = n_mul_sum_y2 - sum_y_2; // + O(1)
-
-        double mul_b = diff_x * diff_y;         // + O(1)
-
-        double b = sqrt(mul_b);                 // + O(1)
-
-        r[i] = a/b;                          // + O(1)
-        */
 
         r[i] = ((n * sum_xy) - sum_x * sum_y) / sqrt((n * sum_x2 - (sum_x*sum_x)) * (n * sum_y2 - (sum_y*sum_y)));
                                    
@@ -85,6 +58,7 @@ void main(){
 
     printf("[1]: Walkthrough Mode (100 to 20000)\n");
     printf("[2]: Custom N Mode\n");
+    printf("[3]: Small data set integrity check (n=5)\n");
     printf("[0]: Exit\n");
     printf("Enter mode: ");
     int choice = 0;
@@ -92,7 +66,60 @@ void main(){
 
     printf("\n");
 
-    if (choice == 2) {
+
+    // checking if formula is accurate
+    if (choice == 3) {
+        double avg = 0;
+        int NumberOfInputs = 5;
+
+
+        for(int gh = 0; gh < 3; gh++) {               
+            srand(time(NULL));
+
+            double **xVec = (double**) malloc(sizeof(double*) * NumberOfInputs);
+            double *yVec = (double*) malloc(sizeof(double) * NumberOfInputs);
+            double *rVec = (double*) malloc(sizeof(double) * NumberOfInputs);
+
+/
+            // Initializing the input matrix
+            for(int i = 0; i < NumberOfInputs; i++) {
+
+                xVec[i] = malloc(sizeof(double) * NumberOfInputs);  
+                double RandomNum = rand() % 4 + 1; 
+                for(int j = 0; j < NumberOfInputs; j++){
+                    xVec[i][j] = RandomNum;
+                }
+
+                yVec[i] = rand() % 4 + 1;
+            }
+
+            display_table(xVec,5,yVec);
+
+            // Function call, and timing
+
+            struct timespec before = {0,0}, after = {0,0};
+            clock_gettime(CLOCK_MONOTONIC, &before);
+            pearson_cor(xVec, yVec, NumberOfInputs, rVec);
+            clock_gettime(CLOCK_MONOTONIC, &after);
+
+            // Runtime calculation
+            double runtime = (((double) 1000*after.tv_sec + after.tv_nsec/1000000.0) - ((double) 1000*before.tv_sec + before.tv_nsec/1000000.0));
+            printf("Runtime: %lf\n", runtime);
+
+            printf("Pearson's r: ");
+            for(int i = 0; i < 5; i++) {
+                printf("%lf ",rVec[i]);
+            }
+            printf("\n\n\n");
+            
+            avg += runtime;
+
+        }
+
+        printf("\n");
+
+        return;
+    } else if (choice == 2) {
         double avg = 0;
         int iter = 0;
         int NumberOfInputs;
@@ -194,9 +221,11 @@ void main(){
 
                 free(yVec);
                 free(rVec);
+
                 for(int j = 0; j < NumberOfInputs; j++){
                     free(xVec[j]);
                 }
+
                 free(xVec);
 
                 

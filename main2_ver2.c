@@ -91,8 +91,6 @@ void * bounded_pearson_cor(void *args) {
             sum_x2 += (x[j][i] * x[j][i]);  // + O(1)
             sum_y2 += (y[j] * y[j]);        // + O(1)
             sum_xy += (x[j][i] * y[j]);     // + O(1)
-
-            sum_x++;
         }
 
         // CRITICAL SECTION

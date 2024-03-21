@@ -65,6 +65,10 @@ int set_affinity(int core_id) {
 }
 
 
+
+
+// Main Function
+
 void * bounded_pearson_cor(void *args) {
     arg* a = (arg *) args;
 
@@ -79,7 +83,7 @@ void * bounded_pearson_cor(void *args) {
     int num_of_cores = sysconf(_SC_NPROCESSORS_ONLN);
     int core_id = ((end+1) / (end-start+1)) % (num_of_cores-1);
     set_affinity(core_id);
-    // printf("Using core: %d\n", core_id);
+    printf("[%d]", core_id);
 
     // printf("Thread created. Bounds: [%d, %d]\n", start, end);
 
@@ -98,13 +102,10 @@ void * bounded_pearson_cor(void *args) {
             sum_x2 += (x[j][i] * x[j][i]);  // + O(1)
             sum_y2 += (y[j] * y[j]);        // + O(1)
             sum_xy += (x[j][i] * y[j]);     // + O(1)
-
-            sum_x++;
         }
 
         r[i] = ((n * sum_xy) - sum_x * sum_y) / sqrt((n * sum_x2 - (sum_x*sum_x)) * (n * sum_y2 - (sum_y*sum_y)));
-                 
-                                   
+                                           
     }
 
 
@@ -174,6 +175,7 @@ int main(){
 
             // Filling in the arguments for the threads
             int offset = NumberOfInputs / NUMBER_OF_THREADS;
+            
             arg* argHolder = (arg*) malloc(sizeof(arg) * NUMBER_OF_THREADS);
             pthread_t *tid = (pthread_t*) malloc(sizeof(pthread_t) * NUMBER_OF_THREADS);
 

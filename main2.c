@@ -76,8 +76,6 @@ void * bounded_pearson_cor(void *args) {
             sum_x2 += (x[j][i] * x[j][i]);  // + O(1)
             sum_y2 += (y[j] * y[j]);        // + O(1)
             sum_xy += (x[j][i] * y[j]);     // + O(1)
-
-            sum_x++;
         }
 
         r[i] = ((n * sum_xy) - sum_x * sum_y) / sqrt((n * sum_x2 - (sum_x*sum_x)) * (n * sum_y2 - (sum_y*sum_y)));
